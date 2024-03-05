@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Display</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Popular Products</h1>
+    <div class="mb-3">
+        <button id="sort-popularity" class="btn btn-primary mr-2">Sort by Popularity</button>
+        <button id="sort-name" class="btn btn-primary mr-2">Sort by Name</button>
+        <button id="sort-price" class="btn btn-primary">Sort by Price</button>
+      </div>
+    <div id="product-list" class="row"></div>
+    
+    </div>
+  </div>
+ 
+
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+  fetch('https://s3.amazonaws.com/open-to-cors/assignment.json')
+    .then(response => response.json())
+    .then(data => {
+      // Store original unsorted data
+      const originalData = Object.values(data.products);
+      displayProducts(originalData);
+
+      // Add event listeners for sorting options
+      document.getElementById('sort-popularity').addEventListener('click', () => {
+        displayProducts(sortByPopularity(originalData));
+      });
+
+      document.getElementById('sort-name').addEventListener('click', () => {
+        displayProducts(sortByName(originalData));
+      });
+
+      document.getElementById('sort-price').addEventListener('click', () => {
+        displayProducts(sortByPrice(originalData));
+      });
+    })
+    .catch(error => console.error('Error fetching data:', error));
+});
+
+function displayProducts(products) {
+  const productList = document.getElementById('product-list');
+  productList.innerHTML = ''; // Clear previous products
+
+  products.forEach(product => {
+    const productCard = document.createElement('div');
+    productCard.classList.add('col-md-4', 'mb-3');
+
+    const priceFormatted = formatPrice(product.price);
+
+    productCard.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">${product.title}</h5>
+          <p class="card-text">Price: $${priceFormatted}</p>
+          <p class="card-text">Popularity: ${product.popularity}</p>
+        </div>
+      </div>
+    `;
+
+    productList.appendChild(productCard);
+  });
+}
+
+function formatPrice(price) {
+  return Number(price).toLocaleString('en-US');
+}
+
+function sortByPopularity(products) {
+  return products.slice().sort((a, b) => b.popularity - a.popularity);
+}
+
+function sortByName(products) {
+  return products.slice().sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function sortByPrice(products) {
+  return products.slice().sort((a, b) => a.price - b.price);
+}
+
+  </script>
+</body>
+</html>
